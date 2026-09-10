@@ -1,0 +1,160 @@
+/* ==========================================================
+   P · Scroll Media  v1.0  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the Accordion Media CSS. No <style> tags needed.
+   ========================================================== */
+.p-scroll {
+  --p-scroll-duration: 1000ms;
+  --p-scroll-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --p-scroll-accent: #dff28b;
+  --p-scroll-line: #c9c9c2;
+  --p-scroll-line-active: #161616;
+}
+
+/* ---------- Media stack ---------- */
+.p-scroll .p-scroll__frame { overflow: hidden; isolation: isolate; }
+
+.p-scroll .p-scroll__visual {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  transition: none;
+}
+.p-scroll img.p-scroll__visual,
+.p-scroll .p-scroll__visual img,
+.p-scroll .p-scroll__visual video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Builder / no-JS: only the first visual shows */
+.p-scroll:not(.is-ready) .p-scroll__visual ~ .p-scroll__visual { opacity: 0; }
+
+/* Wipe + Curtain: reveal in the scroll direction */
+.p-scroll.p-scroll--wipe .p-scroll__visual,
+.p-scroll.p-scroll--curtain .p-scroll__visual {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.12);
+}
+.p-scroll:where(.is-dir-up).p-scroll--wipe .p-scroll__visual,
+.p-scroll:where(.is-dir-up).p-scroll--curtain .p-scroll__visual {
+  clip-path: inset(0 0 100% 0);
+}
+.p-scroll.p-scroll--wipe .p-scroll__visual.is-active,
+.p-scroll.p-scroll--curtain .p-scroll__visual.is-active {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1);
+}
+.p-scroll.p-scroll--wipe .p-scroll__visual.is-shown,
+.p-scroll.p-scroll--curtain .p-scroll__visual.is-shown {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1.06);
+  filter: brightness(0.8);
+}
+
+/* Fade */
+.p-scroll.p-scroll--fade .p-scroll__visual { opacity: 0; transform: scale(1.05); }
+.p-scroll.p-scroll--fade .p-scroll__visual.is-active,
+.p-scroll.p-scroll--fade .p-scroll__visual.is-shown { opacity: 1; transform: scale(1); }
+
+.p-scroll.is-animated .p-scroll__visual.is-active,
+.p-scroll.is-animated .p-scroll__visual.is-shown {
+  transition:
+    clip-path var(--p-scroll-duration) var(--p-scroll-ease),
+    opacity var(--p-scroll-duration) var(--p-scroll-ease),
+    transform calc(var(--p-scroll-duration) * 1.3) var(--p-scroll-ease),
+    filter var(--p-scroll-duration) var(--p-scroll-ease);
+}
+
+/* Curtain layer */
+.p-scroll .p-scroll__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--p-scroll-accent);
+  clip-path: inset(100% 0 0 0);
+  pointer-events: none;
+}
+.p-scroll:where(.is-dir-up) .p-scroll__curtain { clip-path: inset(0 0 100% 0); }
+.p-scroll .p-scroll__curtain.is-running { clip-path: inset(0 0 0 0); }
+.p-scroll.is-animated .p-scroll__curtain.is-running {
+  transition: clip-path calc(var(--p-scroll-duration) * 0.6) var(--p-scroll-ease);
+}
+.p-scroll.is-animated.p-scroll--curtain .p-scroll__visual.is-active {
+  transition-delay: calc(var(--p-scroll-duration) * 0.18);
+}
+
+/* ---------- Steps ---------- */
+.p-scroll.is-ready .p-scroll__step > * { opacity: 0.18; transform: translateY(20px); }
+.p-scroll.is-ready .p-scroll__step.is-active > * { opacity: 1; transform: none; }
+.p-scroll.is-animated .p-scroll__step > * {
+  transition: opacity 0.6s ease, transform 0.8s var(--p-scroll-ease);
+}
+.p-scroll.is-animated .p-scroll__step.is-active > :nth-child(2) { transition-delay: 0.08s; }
+.p-scroll.is-animated .p-scroll__step.is-active > :nth-child(3) { transition-delay: 0.16s; }
+
+.p-scroll .p-scroll__cta { text-decoration: none; }
+.p-scroll .p-scroll__cta-icon { transition: transform 0.4s var(--p-scroll-ease); }
+.p-scroll .p-scroll__cta:hover .p-scroll__cta-icon { transform: translateX(6px); }
+.p-scroll .p-scroll__cta:focus-visible { outline: 2px solid currentColor; outline-offset: 6px; }
+
+/* ---------- Progress lines ---------- */
+.p-scroll .p-scroll__steps { position: relative; }
+.p-scroll .p-scroll__nav {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 56px;
+  padding: 50vh 0;
+  box-sizing: border-box;
+  pointer-events: none;
+}
+.p-scroll .p-scroll__nav-list {
+  position: sticky;
+  top: 50vh;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: auto;
+}
+.p-scroll .p-scroll__dot {
+  appearance: none;
+  display: flex;
+  justify-content: flex-end;
+  width: 48px;
+  margin: 0;
+  padding: 7px 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+.p-scroll .p-scroll__dot::before {
+  content: "";
+  display: block;
+  width: 16px;
+  height: 1.5px;
+  background: var(--p-scroll-line);
+  transition: width 0.5s var(--p-scroll-ease), background-color 0.3s ease;
+}
+.p-scroll .p-scroll__dot:hover::before { background: var(--p-scroll-line-active); }
+.p-scroll .p-scroll__dot[aria-current="true"]::before {
+  width: 36px;
+  height: 2px;
+  background: var(--p-scroll-line-active);
+}
+.p-scroll .p-scroll__dot:focus-visible { outline: 2px solid var(--p-scroll-line-active); outline-offset: 2px; }
+
+@media (max-width: 991px) {
+  .p-scroll .p-scroll__nav { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .p-scroll { --p-scroll-duration: 1ms; }
+  .p-scroll.is-animated .p-scroll__step > * { transition-duration: 1ms; }
+}
