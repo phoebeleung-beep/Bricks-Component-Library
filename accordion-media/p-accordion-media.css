@@ -1,0 +1,159 @@
+/* ==========================================================
+   P · Accordion Media  v1.1  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS
+   No <style> tags needed. Tweak timing and colour below.
+   ========================================================== */
+.p-acc {
+  --p-acc-duration: 900ms;
+  --p-acc-ease: cubic-bezier(0.77, 0, 0.18, 1);
+  --p-acc-accent: #e4532f;
+  --p-acc-icon: #9a988f;
+  --p-acc-icon-active: #1d1d1b;
+}
+
+/* ---------- Image stack ---------- */
+.p-acc .p-acc__frame { isolation: isolate; }
+
+.p-acc .p-acc__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  transform-origin: 50% 100%;
+  transition: none;
+}
+
+/* Builder / no-JS: only the first image shows */
+.p-acc:not(.is-ready) .p-acc__img ~ .p-acc__img { opacity: 0; }
+
+/* Wipe + Curtain: reveal upwards, outgoing image sinks back */
+.p-acc.p-acc--wipe .p-acc__img,
+.p-acc.p-acc--curtain .p-acc__img {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.14);
+}
+.p-acc.p-acc--wipe .p-acc__img.is-active,
+.p-acc.p-acc--curtain .p-acc__img.is-active {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1);
+}
+.p-acc.p-acc--wipe .p-acc__img.is-shown,
+.p-acc.p-acc--curtain .p-acc__img.is-shown {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1.08);
+  filter: brightness(0.8);
+}
+
+/* Fade: crossfade with a slow settle */
+.p-acc.p-acc--fade .p-acc__img {
+  opacity: 0;
+  transform: scale(1.06);
+  transform-origin: 50% 50%;
+}
+.p-acc.p-acc--fade .p-acc__img.is-active,
+.p-acc.p-acc--fade .p-acc__img.is-shown {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.p-acc.is-animated .p-acc__img.is-active,
+.p-acc.is-animated .p-acc__img.is-shown {
+  transition:
+    clip-path var(--p-acc-duration) var(--p-acc-ease),
+    opacity var(--p-acc-duration) var(--p-acc-ease),
+    transform calc(var(--p-acc-duration) * 1.3) var(--p-acc-ease),
+    filter var(--p-acc-duration) var(--p-acc-ease);
+}
+
+/* Curtain: an accent layer leads, the image follows */
+.p-acc .p-acc__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--p-acc-accent);
+  clip-path: inset(100% 0 0 0);
+  pointer-events: none;
+}
+.p-acc .p-acc__curtain.is-running { clip-path: inset(0 0 0 0); }
+.p-acc.is-animated .p-acc__curtain.is-running {
+  transition: clip-path calc(var(--p-acc-duration) * 0.6) var(--p-acc-ease);
+}
+.p-acc.is-animated.p-acc--curtain .p-acc__img.is-active {
+  transition-delay: calc(var(--p-acc-duration) * 0.18);
+}
+
+/* ---------- Accordion ---------- */
+.p-acc .p-acc__item { position: relative; }
+.p-acc .p-acc__trigger { cursor: pointer; }
+
+.p-acc .p-acc__btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+/* Whole row is clickable */
+.p-acc .p-acc__btn::after { content: ""; position: absolute; inset: 0; }
+.p-acc .p-acc__btn:focus-visible { outline: 2px solid var(--p-acc-accent); outline-offset: 6px; }
+
+/* Plus → minus */
+.p-acc .p-acc__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--p-acc-icon);
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+.p-acc .p-acc__icon::before,
+.p-acc .p-acc__icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: currentColor;
+}
+.p-acc .p-acc__icon::after { transform: rotate(90deg); }
+.p-acc.is-animated .p-acc__icon::after { transition: transform var(--p-acc-duration) var(--p-acc-ease); }
+.p-acc .p-acc__item:hover .p-acc__icon,
+.p-acc .p-acc__item.is-open .p-acc__icon { color: var(--p-acc-icon-active); }
+.p-acc .p-acc__item.is-open .p-acc__icon::after { transform: rotate(0deg); }
+
+/* Height: grid 0fr → 1fr (no JS measuring) */
+.p-acc .p-acc__panel-inner { min-height: 0; overflow: hidden; }
+.p-acc.is-ready .p-acc__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  position: relative;
+  z-index: 1;
+}
+.p-acc.is-ready .p-acc__item.is-open .p-acc__panel { grid-template-rows: 1fr; }
+.p-acc.is-ready .p-acc__desc { opacity: 0; transform: translateY(10px); }
+.p-acc.is-ready .p-acc__item.is-open .p-acc__desc { opacity: 1; transform: none; }
+
+.p-acc.is-animated .p-acc__panel {
+  transition: grid-template-rows calc(var(--p-acc-duration) * 0.75) var(--p-acc-ease);
+}
+.p-acc.is-animated .p-acc__desc {
+  transition: opacity 0.35s ease, transform 0.5s var(--p-acc-ease);
+}
+.p-acc.is-animated .p-acc__item.is-open .p-acc__desc { transition-delay: 0.18s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .p-acc { --p-acc-duration: 1ms; }
+  .p-acc.is-animated .p-acc__desc { transition-duration: 1ms; }
+}
