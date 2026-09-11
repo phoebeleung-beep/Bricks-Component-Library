@@ -1,0 +1,159 @@
+/* ==========================================================
+   BM · Accordion Media  v2.0  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS
+   No <style> tags needed. Tweak timing and colour below.
+   ========================================================== */
+.bm-acc {
+  --bm-acc-duration: 900ms;
+  --bm-acc-ease: cubic-bezier(0.77, 0, 0.18, 1);
+  --bm-acc-accent: #e4532f;
+  --bm-acc-icon: #9a988f;
+  --bm-acc-icon-active: #1d1d1b;
+}
+
+/* ---------- Image stack ---------- */
+.bm-acc .bm-acc__frame { isolation: isolate; }
+
+.bm-acc .bm-acc__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  transform-origin: 50% 100%;
+  transition: none;
+}
+
+/* Builder / no-JS: only the first image shows */
+.bm-acc:not(.is-ready) .bm-acc__img ~ .bm-acc__img { opacity: 0; }
+
+/* Wipe + Curtain: reveal upwards, outgoing image sinks back */
+.bm-acc.bm-acc--wipe .bm-acc__img,
+.bm-acc.bm-acc--curtain .bm-acc__img {
+  clip-path: inset(100% 0 0 0);
+  transform: scale(1.14);
+}
+.bm-acc.bm-acc--wipe .bm-acc__img.is-active,
+.bm-acc.bm-acc--curtain .bm-acc__img.is-active {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1);
+}
+.bm-acc.bm-acc--wipe .bm-acc__img.is-shown,
+.bm-acc.bm-acc--curtain .bm-acc__img.is-shown {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1.08);
+  filter: brightness(0.8);
+}
+
+/* Fade: crossfade with a slow settle */
+.bm-acc.bm-acc--fade .bm-acc__img {
+  opacity: 0;
+  transform: scale(1.06);
+  transform-origin: 50% 50%;
+}
+.bm-acc.bm-acc--fade .bm-acc__img.is-active,
+.bm-acc.bm-acc--fade .bm-acc__img.is-shown {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.bm-acc.is-animated .bm-acc__img.is-active,
+.bm-acc.is-animated .bm-acc__img.is-shown {
+  transition:
+    clip-path var(--bm-acc-duration) var(--bm-acc-ease),
+    opacity var(--bm-acc-duration) var(--bm-acc-ease),
+    transform calc(var(--bm-acc-duration) * 1.3) var(--bm-acc-ease),
+    filter var(--bm-acc-duration) var(--bm-acc-ease);
+}
+
+/* Curtain: an accent layer leads, the image follows */
+.bm-acc .bm-acc__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--bm-acc-accent);
+  clip-path: inset(100% 0 0 0);
+  pointer-events: none;
+}
+.bm-acc .bm-acc__curtain.is-running { clip-path: inset(0 0 0 0); }
+.bm-acc.is-animated .bm-acc__curtain.is-running {
+  transition: clip-path calc(var(--bm-acc-duration) * 0.6) var(--bm-acc-ease);
+}
+.bm-acc.is-animated.bm-acc--curtain .bm-acc__img.is-active {
+  transition-delay: calc(var(--bm-acc-duration) * 0.18);
+}
+
+/* ---------- Accordion ---------- */
+.bm-acc .bm-acc__item { position: relative; }
+.bm-acc .bm-acc__trigger { cursor: pointer; }
+
+.bm-acc .bm-acc__btn {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: inherit;
+  line-height: inherit;
+  cursor: pointer;
+}
+/* Whole row is clickable */
+.bm-acc .bm-acc__btn::after { content: ""; position: absolute; inset: 0; }
+.bm-acc .bm-acc__btn:focus-visible { outline: 2px solid var(--bm-acc-accent); outline-offset: 6px; }
+
+/* Plus → minus */
+.bm-acc .bm-acc__icon {
+  position: relative;
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  color: var(--bm-acc-icon);
+  pointer-events: none;
+  transition: color 0.3s ease;
+}
+.bm-acc .bm-acc__icon::before,
+.bm-acc .bm-acc__icon::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 1.5px;
+  margin-top: -0.75px;
+  background: currentColor;
+}
+.bm-acc .bm-acc__icon::after { transform: rotate(90deg); }
+.bm-acc.is-animated .bm-acc__icon::after { transition: transform var(--bm-acc-duration) var(--bm-acc-ease); }
+.bm-acc .bm-acc__item:hover .bm-acc__icon,
+.bm-acc .bm-acc__item.is-open .bm-acc__icon { color: var(--bm-acc-icon-active); }
+.bm-acc .bm-acc__item.is-open .bm-acc__icon::after { transform: rotate(0deg); }
+
+/* Height: grid 0fr → 1fr (no JS measuring) */
+.bm-acc .bm-acc__panel-inner { min-height: 0; overflow: hidden; }
+.bm-acc.is-ready .bm-acc__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  position: relative;
+  z-index: 1;
+}
+.bm-acc.is-ready .bm-acc__item.is-open .bm-acc__panel { grid-template-rows: 1fr; }
+.bm-acc.is-ready .bm-acc__desc { opacity: 0; transform: translateY(10px); }
+.bm-acc.is-ready .bm-acc__item.is-open .bm-acc__desc { opacity: 1; transform: none; }
+
+.bm-acc.is-animated .bm-acc__panel {
+  transition: grid-template-rows calc(var(--bm-acc-duration) * 0.75) var(--bm-acc-ease);
+}
+.bm-acc.is-animated .bm-acc__desc {
+  transition: opacity 0.35s ease, transform 0.5s var(--bm-acc-ease);
+}
+.bm-acc.is-animated .bm-acc__item.is-open .bm-acc__desc { transition-delay: 0.18s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-acc { --bm-acc-duration: 1ms; }
+  .bm-acc.is-animated .bm-acc__desc { transition-duration: 1ms; }
+}
