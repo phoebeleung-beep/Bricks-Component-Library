@@ -1,0 +1,115 @@
+/* ==========================================================
+   BM · Zoom Gallery  v2.0  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the other BM templates. No <style> tags needed.
+   ========================================================== */
+.bm-zoom {
+  --bm-zoom-grid-w: 118vw;   /* finished grid size; bigger than the screen = photos bleed off the edges */
+  --bm-zoom-grid-h: 128vh;
+  --bm-zoom-gap: 20px;
+  --bm-zoom-radius: 6px;
+  --bm-zoom-shade: 0.4;      /* darkening behind the text */
+  --bm-zoom-text-color: #fff;
+  --bm-zoom-text: 1;         /* set by JS */
+}
+
+/* ---------- Stage ---------- */
+.bm-zoom .bm-zoom__stage {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ---------- Grid (7 tiles) ---------- */
+.bm-zoom .bm-zoom__grid {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr) minmax(0, 2.6fr) minmax(0, 1fr);
+  gap: var(--bm-zoom-gap);
+  width: var(--bm-zoom-grid-w);
+  max-width: none;
+  height: var(--bm-zoom-grid-h);
+}
+
+.bm-zoom .bm-zoom__tile {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  max-width: none;
+  object-fit: cover;
+  border-radius: var(--bm-zoom-radius);
+  overflow: hidden;
+}
+.bm-zoom .bm-zoom__tile img,
+.bm-zoom .bm-zoom__tile video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/*  1 | 2
+    3 | 4 (hero) | 5
+    6 | 7          */
+.bm-zoom .bm-zoom__tile:nth-child(1) { grid-area: 1 / 1 / 2 / 7; }
+.bm-zoom .bm-zoom__tile:nth-child(2) { grid-area: 1 / 7 / 2 / 13; }
+.bm-zoom .bm-zoom__tile:nth-child(3) { grid-area: 2 / 1 / 3 / 3; }
+.bm-zoom .bm-zoom__tile:nth-child(4) { grid-area: 2 / 3 / 3 / 11; }
+.bm-zoom .bm-zoom__tile:nth-child(5) { grid-area: 2 / 11 / 3 / 13; }
+.bm-zoom .bm-zoom__tile:nth-child(6) { grid-area: 3 / 1 / 4 / 7; }
+.bm-zoom .bm-zoom__tile:nth-child(7) { grid-area: 3 / 7 / 4 / 13; }
+
+/* ---------- Text overlay ---------- */
+.bm-zoom .bm-zoom__text {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--bm-zoom-text-color);
+  pointer-events: none;
+  background: rgb(0 0 0 / calc(var(--bm-zoom-shade) * var(--bm-zoom-text)));
+}
+/* Body text follows the overlay colour (headings keep their own) */
+.bm-zoom .bm-zoom__text :is(p, .brxe-text, .brxe-text-basic) { color: inherit; }
+
+/* Children fade one after another: heading, then paragraph, then button.
+   Fading out runs in reverse (button first). */
+.bm-zoom .bm-zoom__text > * {
+  --bm-zoom-o: clamp(0, (var(--bm-zoom-text) - var(--bm-zoom-i, 0) * 0.15) / 0.7, 1);
+  opacity: var(--bm-zoom-o);
+  transform: translateY(calc((1 - var(--bm-zoom-o)) * 24px));
+}
+.bm-zoom .bm-zoom__text > :nth-child(2) { --bm-zoom-i: 1; }
+.bm-zoom .bm-zoom__text > :nth-child(n + 3) { --bm-zoom-i: 2; }
+
+/* Links and buttons are clickable only while the text is showing */
+.bm-zoom .bm-zoom__text :is(a, button, input, select, textarea) { pointer-events: auto; }
+.bm-zoom.is-text-hidden .bm-zoom__text :is(a, button, input, select, textarea) { visibility: hidden; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767px) {
+  .bm-zoom {
+    --bm-zoom-grid-w: 124vw;
+    --bm-zoom-grid-h: 118vh;
+    --bm-zoom-gap: 10px;
+    --bm-zoom-radius: 4px;
+  }
+  .bm-zoom .bm-zoom__grid { grid-template-rows: minmax(0, 1fr) minmax(0, 1.8fr) minmax(0, 1fr); }
+  .bm-zoom .bm-zoom__tile:nth-child(3) { grid-area: 2 / 1 / 3 / 4; }
+  .bm-zoom .bm-zoom__tile:nth-child(4) { grid-area: 2 / 4 / 3 / 10; }
+  .bm-zoom .bm-zoom__tile:nth-child(5) { grid-area: 2 / 10 / 3 / 13; }
+}
+
+/* ---------- Reduced motion: show the finished grid, no scroll track ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bm-zoom { height: auto !important; min-height: 0 !important; }
+  .bm-zoom .bm-zoom__stage { position: relative !important; }
+}
