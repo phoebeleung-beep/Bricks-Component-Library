@@ -1,0 +1,180 @@
+/* ==========================================================
+   BM · Slider  v1.1  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the other BM templates. No <style> tags needed.
+   ========================================================== */
+.bm-slider {
+  --bm-slider-container: 1280px;               /* match your site's container width */
+  --bm-slider-gutter: clamp(20px, 4vw, 48px);  /* side space when the screen is narrower than the container */
+  --bm-slider-gap: clamp(20px, 3.5vw, 56px);   /* space between slides */
+  --bm-slider-header-align: center;            /* start | center */
+  --bm-slider-arrow: 26px;                     /* length of the CSS arrows */
+  --bm-slider-bar-width: 360px;                /* progress bar length (it shrinks when space is tight) */
+  --bm-slider-controls-gap: 24px;
+  --bm-slider-per-view: var(--bm-slider-per-view-desktop, 3.2);
+  --bm-slider-inset: max(var(--bm-slider-gutter), calc((100% - var(--bm-slider-container)) / 2));
+  --bm-slider-progress: 0;                     /* set by JS */
+  --bm-slider-thumb: 0.3;                      /* set by JS */
+}
+
+/* ---------- Header + controls line up with the first slide ---------- */
+.bm-slider .bm-slider__header,
+.bm-slider .bm-slider__controls {
+  width: calc(100% - 2 * var(--bm-slider-gutter));
+  max-width: var(--bm-slider-container);
+  margin-inline: auto;
+}
+.bm-slider .bm-slider__header {
+  align-items: var(--bm-slider-header-align);
+  text-align: var(--bm-slider-header-align);
+}
+
+/* ---------- Track ---------- */
+.bm-slider .bm-slider__track {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--bm-slider-gap);
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-inline: var(--bm-slider-inset);
+  scroll-padding-inline: var(--bm-slider-inset);
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.bm-slider .bm-slider__track::-webkit-scrollbar { display: none; }
+.bm-slider .bm-slider__track:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; }
+
+.bm-slider .bm-slider__slide {
+  flex: 0 0 calc((100% - var(--bm-slider-gap) * (var(--bm-slider-per-view) - 1)) / var(--bm-slider-per-view));
+  width: auto;
+  min-width: 0;
+  scroll-snap-align: start;
+}
+.bm-slider .bm-slider__slide img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  -webkit-user-drag: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .bm-slider:not(.bm-is-static) .bm-slider__track { cursor: grab; }
+}
+.bm-slider.bm-is-dragging .bm-slider__track {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+/* While an arrow or the progress bar is moving the track, snapping would fight
+   the smooth scroll and could stop it part-way. */
+.bm-slider.bm-is-seeking .bm-slider__track { scroll-snap-type: none; }
+.bm-slider.bm-is-dragging .bm-slider__slide { pointer-events: none; }
+
+/* ---------- Controls ---------- */
+.bm-slider .bm-slider__controls {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;          /* keep arrows and bar on one line at every size */
+  align-items: center;
+  justify-content: space-between;
+  column-gap: var(--bm-slider-controls-gap);
+  row-gap: 0;
+}
+.bm-slider.bm-is-static .bm-slider__controls { display: none; }
+
+.bm-slider .bm-slider__prev,
+.bm-slider .bm-slider__next {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 44px;
+  min-height: 44px;
+  cursor: pointer;
+  transition: opacity 0.3s ease, translate 0.3s ease;
+}
+.bm-slider .bm-slider__prev:hover { translate: -4px 0; }
+.bm-slider .bm-slider__next:hover { translate: 4px 0; }
+.bm-slider .bm-slider__prev:focus-visible,
+.bm-slider .bm-slider__next:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.bm-slider .bm-slider__prev.bm-is-disabled,
+.bm-slider .bm-slider__next.bm-is-disabled { opacity: 0.3; cursor: default; translate: none; }
+
+/* Default arrows are drawn in CSS. Put an Icon element inside to use your own. */
+.bm-slider :is(.bm-slider__prev, .bm-slider__next):not(:has(*))::before,
+.bm-slider :is(.bm-slider__prev, .bm-slider__next):not(:has(*))::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+}
+.bm-slider :is(.bm-slider__prev, .bm-slider__next):not(:has(*))::before {
+  width: var(--bm-slider-arrow);
+  height: 1.5px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+.bm-slider :is(.bm-slider__prev, .bm-slider__next):not(:has(*))::after {
+  width: 11px;
+  height: 11px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: translate(-50%, -50%) translateX(calc(var(--bm-slider-arrow) / 2 - 7.5px)) rotate(45deg);
+}
+.bm-slider .bm-slider__prev:not(:has(*)) { transform: scaleX(-1); }
+
+/* Progress bar */
+.bm-slider .bm-slider__progress {
+  position: relative;
+  flex: 0 1 var(--bm-slider-bar-width);
+  width: auto !important;     /* overrides a fixed width set on the element, so it can shrink */
+  min-width: 40px;
+  height: 9px;
+  box-sizing: border-box;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: none;
+}
+.bm-slider .bm-slider__progress::before {
+  content: "";
+  position: absolute;
+  inset: -14px 0;
+}
+.bm-slider .bm-slider__thumb {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  left: calc(1px + var(--bm-slider-progress) * (100% - 2px - var(--bm-slider-thumb) * (100% - 2px)));
+  width: calc(var(--bm-slider-thumb) * (100% - 2px));
+  border-radius: 999px;
+  background: currentColor;
+  pointer-events: none;
+}
+
+/* ---------- Breakpoints ---------- */
+@media (max-width: 991px) {
+  .bm-slider { --bm-slider-per-view: var(--bm-slider-per-view-tablet, 2.2); }
+}
+@media (max-width: 767px) {
+  .bm-slider {
+    --bm-slider-per-view: var(--bm-slider-per-view-mobile, 1.15);
+    --bm-slider-arrow: 22px;
+    --bm-slider-bar-width: 200px;
+    --bm-slider-controls-gap: 12px;
+  }
+  .bm-slider .bm-slider__prev,
+  .bm-slider .bm-slider__next { min-width: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bm-slider .bm-slider__prev,
+  .bm-slider .bm-slider__next { transition: none; }
+}
