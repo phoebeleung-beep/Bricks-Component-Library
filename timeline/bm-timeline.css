@@ -1,0 +1,411 @@
+/* ==========================================================
+   BM · Timeline  v1.4  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the other BM templates. No <style> tags needed.
+   ========================================================== */
+.bm-timeline {
+  --bm-timeline-duration: 800ms;
+  --bm-timeline-ease: cubic-bezier(0.65, 0, 0.35, 1);
+  --bm-timeline-accent: currentColor;      /* dots, rail and active year */
+  --bm-timeline-rail: color-mix(in srgb, currentColor 22%, transparent);
+  --bm-timeline-ghost: color-mix(in srgb, currentColor 7%, transparent);
+  --bm-timeline-ghost-size: clamp(9rem, 26vw, 24rem);
+  --bm-timeline-media-ratio: 4 / 5;
+  --bm-timeline-media-width: 460px;        /* width of the image in the centre/overlay layouts */
+  --bm-timeline-gap: clamp(32px, 5vw, 80px);      /* space between image and text */
+  --bm-timeline-stack-gap: clamp(32px, 4vw, 56px);/* space under the heading */
+  --bm-timeline-controls-gap: clamp(18px, 2vw, 28px); /* space above the arrows and the rail */
+  --bm-timeline-text-align: start;         /* set by data-bm-timeline-text */
+  --bm-timeline-arrow-len: 22px;           /* length of the CSS arrow */
+  --bm-timeline-arrow-hit: 48px;           /* tap target around it */
+  --bm-timeline-dot: 9px;
+  --bm-timeline-dot-space: 7px;            /* room above the dot so the active one isn't clipped */
+  --bm-timeline-point-min: 130px;          /* below this the rail scrolls instead of squashing */
+}
+
+/* ---------- Spacing ---------- */
+.bm-timeline .bm-timeline__inner { row-gap: var(--bm-timeline-stack-gap); }
+.bm-timeline .bm-timeline__stage { position: relative; column-gap: var(--bm-timeline-gap); }
+/* The arrows and rail sit closer to the content than the heading does */
+.bm-timeline .bm-timeline__arrows,
+.bm-timeline .bm-timeline__axis {
+  margin-top: calc(var(--bm-timeline-controls-gap) - var(--bm-timeline-stack-gap));
+}
+.bm-timeline .bm-timeline__arrows + .bm-timeline__axis { margin-top: calc(var(--bm-timeline-controls-gap) / 2 - var(--bm-timeline-stack-gap)); }
+
+/* ---------- Layout options (set on the section) ----------
+   data-bm-timeline-media="left | right | center | overlay"   where the image sits
+   data-bm-timeline-align="top | center | bottom"             where the text sits beside it
+   Both are handled with order / grid-column / align-self, so they override the
+   element settings without needing !important.                                  */
+
+/* Image on the right */
+.bm-timeline[data-bm-timeline-media="right"] .bm-timeline__media { order: 2; }
+.bm-timeline[data-bm-timeline-media="right"] .bm-timeline__entries { order: 1; }
+
+/* Image centred, text underneath */
+.bm-timeline[data-bm-timeline-media="center"] .bm-timeline__media,
+.bm-timeline[data-bm-timeline-media="overlay"] .bm-timeline__media {
+  grid-column: 1 / -1;
+  justify-self: center;
+  width: min(100%, var(--bm-timeline-media-width));
+}
+.bm-timeline[data-bm-timeline-media="center"] .bm-timeline__entries { grid-column: 1 / -1; }
+
+/* Sideways text alignment: data-bm-timeline-text="left | center | right" */
+.bm-timeline[data-bm-timeline-text] .bm-timeline__entry { text-align: var(--bm-timeline-text-align); }
+.bm-timeline[data-bm-timeline-text] .bm-timeline__entry > * { margin-inline: var(--bm-timeline-text-indent, 0) auto; }
+.bm-timeline[data-bm-timeline-text="left"] { --bm-timeline-text-align: left; }
+.bm-timeline[data-bm-timeline-text="center"] { --bm-timeline-text-align: center; --bm-timeline-text-indent: auto; }
+.bm-timeline[data-bm-timeline-text="right"] { --bm-timeline-text-align: right; --bm-timeline-text-indent: auto; }
+.bm-timeline[data-bm-timeline-text="right"] .bm-timeline__entry > * { margin-inline: auto 0; }
+
+/* Image centred, text laid over it at the bottom left (as in the reference) */
+.bm-timeline[data-bm-timeline-media="overlay"] .bm-timeline__entries {
+  position: absolute;
+  inset: auto auto 0 0;
+  z-index: 2;
+  width: min(42%, 30rem);
+}
+
+/* Where the text sits next to the image */
+.bm-timeline[data-bm-timeline-align="top"] .bm-timeline__entries { align-self: start; }
+.bm-timeline[data-bm-timeline-align="center"] .bm-timeline__entries { align-self: center; }
+.bm-timeline[data-bm-timeline-align="bottom"] .bm-timeline__entries { align-self: end; }
+.bm-timeline[data-bm-timeline-align="top"] .bm-timeline__media,
+.bm-timeline[data-bm-timeline-align="bottom"] .bm-timeline__media { align-self: stretch; }
+
+/* Big year behind everything */
+.bm-timeline .bm-timeline__ghost {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 0;
+  font-size: var(--bm-timeline-ghost-size);
+  line-height: 0.8;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--bm-timeline-ghost);
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+/* ---------- Media stack ---------- */
+.bm-timeline .bm-timeline__media {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: var(--bm-timeline-media-ratio);
+  overflow: hidden;
+  isolation: isolate;
+}
+.bm-timeline .bm-timeline__visual {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  margin: 0;
+  transition: none;
+}
+.bm-timeline img.bm-timeline__visual,
+.bm-timeline .bm-timeline__visual img,
+.bm-timeline .bm-timeline__visual video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Builder / no-JS: show only the first visual */
+.bm-timeline:not(.bm-is-ready) .bm-timeline__visual ~ .bm-timeline__visual { opacity: 0; }
+
+/* Wipe: the new image comes in from the side you are moving towards */
+.bm-timeline.bm-timeline--wipe .bm-timeline__visual {
+  clip-path: inset(0 0 0 100%);
+  transform: scale(1.08);
+}
+.bm-timeline.bm-timeline--wipe.bm-is-back .bm-timeline__visual { clip-path: inset(0 100% 0 0); }
+.bm-timeline.bm-timeline--wipe .bm-timeline__visual.bm-is-active {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1);
+}
+.bm-timeline.bm-timeline--wipe .bm-timeline__visual.bm-is-shown {
+  clip-path: inset(0 0 0 0);
+  transform: scale(1.04);
+}
+
+/* Fade */
+.bm-timeline.bm-timeline--fade .bm-timeline__visual { opacity: 0; transform: scale(1.04); }
+.bm-timeline.bm-timeline--fade .bm-timeline__visual.bm-is-active,
+.bm-timeline.bm-timeline--fade .bm-timeline__visual.bm-is-shown { opacity: 1; transform: scale(1); }
+
+.bm-timeline.bm-is-animated .bm-timeline__visual.bm-is-active,
+.bm-timeline.bm-is-animated .bm-timeline__visual.bm-is-shown {
+  transition:
+    clip-path var(--bm-timeline-duration) var(--bm-timeline-ease),
+    opacity var(--bm-timeline-duration) var(--bm-timeline-ease),
+    transform calc(var(--bm-timeline-duration) * 1.25) var(--bm-timeline-ease);
+}
+
+/* ---------- Entries: stacked, only the active one shows ---------- */
+.bm-timeline .bm-timeline__entries {
+  position: relative;
+  z-index: 1;
+  display: grid;
+}
+.bm-timeline.bm-is-ready .bm-timeline__entry {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  translate: 0 14px;
+}
+.bm-timeline.bm-is-ready .bm-timeline__entry.bm-is-active {
+  opacity: 1;
+  visibility: visible;
+  translate: none;
+}
+.bm-timeline.bm-is-animated .bm-timeline__entry {
+  transition: opacity 0.35s ease, translate 0.5s var(--bm-timeline-ease), visibility 0s linear 0.35s;
+}
+.bm-timeline.bm-is-animated .bm-timeline__entry.bm-is-active {
+  transition: opacity 0.45s ease 0.12s, translate 0.6s var(--bm-timeline-ease) 0.12s, visibility 0s;
+}
+
+/* ---------- Axis ---------- */
+.bm-timeline .bm-timeline__axis {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+.bm-timeline .bm-timeline__axis::-webkit-scrollbar { display: none; }
+
+/* The rail can be dragged whenever it is wider than the space it has */
+@media (hover: hover) and (pointer: fine) {
+  .bm-timeline .bm-timeline__axis { cursor: grab; }
+}
+.bm-timeline.bm-is-dragging .bm-timeline__axis {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+.bm-timeline .bm-timeline__point {
+  position: relative;
+  flex: 1 1 0;      /* share the rail evenly; Bricks blocks are 100% wide by default */
+  width: auto;
+  min-width: var(--bm-timeline-point-min);
+  scroll-snap-align: center;
+}
+
+/* The rail is drawn per point, so it spans the whole row even when it scrolls.
+   Drawing it on the axis itself only covered the visible part. */
+.bm-timeline .bm-timeline__point::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--bm-timeline-dot-space) + var(--bm-timeline-dot) / 2);
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--bm-timeline-rail);
+}
+.bm-timeline .bm-timeline__point:first-child::before { left: 50%; }
+.bm-timeline .bm-timeline__point:last-child::before { right: 50%; }
+
+.bm-timeline .bm-timeline__point-btn {
+  appearance: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  padding: var(--bm-timeline-dot-space) 12px 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+.bm-timeline .bm-timeline__point-btn:focus-visible { outline: 2px solid currentColor; outline-offset: 4px; }
+
+/* Dot */
+.bm-timeline .bm-timeline__point-btn::before {
+  content: "";
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: var(--bm-timeline-dot);
+  height: var(--bm-timeline-dot);
+  border-radius: 50%;
+  background: var(--bm-timeline-rail);
+  transition: background-color 0.3s ease, scale 0.3s var(--bm-timeline-ease);
+}
+.bm-timeline .bm-timeline__point:hover .bm-timeline__point-btn::before { background: var(--bm-timeline-accent); }
+.bm-timeline .bm-timeline__point.bm-is-active .bm-timeline__point-btn::before {
+  background: var(--bm-timeline-accent);
+  scale: 1.35;
+}
+
+/* Year + label */
+.bm-timeline .bm-timeline__year,
+.bm-timeline .bm-timeline__label {
+  opacity: 0.45;
+  transition: opacity 0.3s ease;
+}
+.bm-timeline .bm-timeline__point:hover :is(.bm-timeline__year, .bm-timeline__label) { opacity: 0.75; }
+.bm-timeline .bm-timeline__point.bm-is-active :is(.bm-timeline__year, .bm-timeline__label) { opacity: 1; }
+
+/* ---------- Arrow placement ----------
+   data-bm-timeline-arrows="text" (default) lines them up with the text column,
+   "media" with the image, "edge" keeps them at the far edge of the section.   */
+.bm-timeline .bm-timeline__arrows { justify-content: flex-start; }
+.bm-timeline[data-bm-timeline-arrows="edge"] .bm-timeline__arrows { justify-content: flex-end; }
+
+/* Two-column layouts: half the row, offset to sit under the chosen column */
+.bm-timeline:not([data-bm-timeline-media="center"]):not([data-bm-timeline-media="overlay"]) .bm-timeline__arrows {
+  --bm-timeline-col: calc(50% + var(--bm-timeline-gap) / 2);
+}
+.bm-timeline:not([data-bm-timeline-media="center"]):not([data-bm-timeline-media="overlay"]):not([data-bm-timeline-arrows="edge"]) .bm-timeline__arrows {
+  padding-inline-start: var(--bm-timeline-arrows-offset, var(--bm-timeline-col));
+}
+/* Image left → text is on the right, and the other way round */
+.bm-timeline[data-bm-timeline-media="right"]:not([data-bm-timeline-arrows="media"]) .bm-timeline__arrows,
+.bm-timeline[data-bm-timeline-arrows="media"]:not([data-bm-timeline-media="right"]) .bm-timeline__arrows {
+  --bm-timeline-arrows-offset: 0px;
+}
+
+/* Centred layouts: line up with the image */
+.bm-timeline:is([data-bm-timeline-media="center"], [data-bm-timeline-media="overlay"]) .bm-timeline__arrows {
+  width: min(100%, var(--bm-timeline-media-width));
+  margin-inline: auto;
+  justify-content: space-between;
+}
+.bm-timeline:is([data-bm-timeline-media="center"], [data-bm-timeline-media="overlay"])[data-bm-timeline-arrows="edge"] .bm-timeline__arrows {
+  width: 100%;
+}
+
+/* The arrow graphic is centred in its tap target, so pull the first one back by
+   half the difference. That puts the arrow itself level with the text or image. */
+.bm-timeline .bm-timeline__arrows .bm-timeline__prev {
+  margin-inline-start: calc((var(--bm-timeline-arrow-hit) - var(--bm-timeline-arrow-len)) / -2);
+}
+.bm-timeline[data-bm-timeline-arrows="edge"] .bm-timeline__arrows .bm-timeline__prev { margin-inline-start: 0; }
+.bm-timeline[data-bm-timeline-arrows="edge"] .bm-timeline__arrows .bm-timeline__next {
+  margin-inline-end: calc((var(--bm-timeline-arrow-hit) - var(--bm-timeline-arrow-len)) / -2);
+}
+
+/* ---------- Arrows ---------- */
+.bm-timeline .bm-timeline__prev,
+.bm-timeline .bm-timeline__next {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: var(--bm-timeline-arrow-hit);
+  min-height: var(--bm-timeline-arrow-hit);
+  cursor: pointer;
+  transition: opacity 0.3s ease, translate 0.3s ease;
+}
+.bm-timeline .bm-timeline__prev:hover { translate: -4px 0; }
+.bm-timeline .bm-timeline__next:hover { translate: 4px 0; }
+.bm-timeline .bm-timeline__prev:focus-visible,
+.bm-timeline .bm-timeline__next:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+.bm-timeline .bm-timeline__prev.bm-is-disabled,
+.bm-timeline .bm-timeline__next.bm-is-disabled { opacity: 0.35; cursor: default; translate: none; }
+
+/* CSS arrows. Put an Icon element inside to use your own instead. */
+.bm-timeline :is(.bm-timeline__prev, .bm-timeline__next):not(:has(*))::before,
+.bm-timeline :is(.bm-timeline__prev, .bm-timeline__next):not(:has(*))::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+}
+.bm-timeline :is(.bm-timeline__prev, .bm-timeline__next):not(:has(*))::before {
+  width: var(--bm-timeline-arrow-len);
+  height: 1.5px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+.bm-timeline :is(.bm-timeline__prev, .bm-timeline__next):not(:has(*))::after {
+  width: 10px;
+  height: 10px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: translate(-50%, -50%) translateX(4px) rotate(45deg);
+}
+.bm-timeline .bm-timeline__prev:not(:has(*)) { transform: scaleX(-1); }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 767px) {
+  .bm-timeline {
+    --bm-timeline-ghost-size: clamp(7rem, 34vw, 12rem);
+    --bm-timeline-media-ratio: 3 / 4;
+  }
+  /* Arrows and rail run the full width on mobile */
+  .bm-timeline .bm-timeline__arrows {
+    width: 100%;
+    padding-inline-start: 0;
+    margin-inline: 0;
+  }
+
+  /* Every layout stacks on mobile: image first, then text */
+  .bm-timeline[data-bm-timeline-media] .bm-timeline__media,
+  .bm-timeline[data-bm-timeline-media] .bm-timeline__entries {
+    position: static;
+    order: unset;
+    grid-column: auto;
+    justify-self: stretch;
+    align-self: auto;
+    width: 100%;
+  }
+  .bm-timeline[data-bm-timeline-media="overlay"] .bm-timeline__entries { inset: auto; }
+
+  /* Years scroll sideways instead of squeezing */
+  .bm-timeline .bm-timeline__point { flex: 0 0 auto; width: 58%; max-width: 240px; }
+
+  /* Default on mobile: drag the year rail, no arrows.
+     data-bm-timeline-mobile="both"   keeps the arrows as well
+     data-bm-timeline-mobile="arrows" drops the rail and shows just the current year */
+  .bm-timeline:not([data-bm-timeline-mobile="both"]):not([data-bm-timeline-mobile="arrows"]) :is(.bm-timeline__arrows, .bm-timeline__prev, .bm-timeline__next) {
+    display: none;
+  }
+  .bm-timeline .bm-timeline__axis { scroll-snap-type: x mandatory; }
+
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__axis {
+    overflow: visible;
+    justify-content: center;
+    scroll-snap-type: none;
+  }
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__point { display: none; }
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__point.bm-is-active {
+    display: block;
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: none;
+  }
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__point::before { content: none; }
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__point-btn { padding-top: 0; cursor: default; }
+  .bm-timeline[data-bm-timeline-mobile="arrows"] .bm-timeline__point-btn::before { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-timeline { --bm-timeline-duration: 1ms; }
+  .bm-timeline.bm-is-animated .bm-timeline__entry,
+  .bm-timeline.bm-is-animated .bm-timeline__entry.bm-is-active { transition-duration: 1ms; transition-delay: 0s; }
+  .bm-timeline .bm-timeline__prev,
+  .bm-timeline .bm-timeline__next { transition: none; }
+}
