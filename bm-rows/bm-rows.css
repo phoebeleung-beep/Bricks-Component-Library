@@ -1,0 +1,192 @@
+/* ==========================================================
+   BM · Rows  v1.1  (site-wide CSS)  — CSS only, no script
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the other BM templates. No <style> tags needed.
+
+   Markup — three classes:
+     .bm-rows                 the list wrapper
+       .bm-rows__row          each row; set its tag to "a" to make it a link
+         .bm-rows__title      the headline
+         .bm-rows__meta       the date or label
+         .bm-rows__arrow      the chip on the right (empty = CSS arrow)
+
+   Options (custom attributes on the wrapper):
+     data-bm-rows-effect="fill | slide | line"    default: fill
+     data-bm-rows-bleed="40px"                    how far the fill runs past the text
+   ========================================================== */
+.bm-rows {
+  --bm-rows-duration: 460ms;
+  --bm-rows-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --bm-rows-ink: #232725;            /* the dark fill */
+  --bm-rows-on-ink: #f6f6f2;         /* text on the fill */
+  --bm-rows-accent: #cdeda2;         /* the arrow chip when active */
+  --bm-rows-line: color-mix(in srgb, currentColor 14%, transparent);
+  --bm-rows-pad-y: clamp(20px, 2.4vw, 34px);
+  --bm-rows-bleed: clamp(16px, 2vw, 40px);   /* how far the fill runs past the text */
+  --bm-rows-gap: clamp(16px, 3vw, 48px);
+  --bm-rows-radius: 0px;
+  --bm-rows-shift: 10px;             /* how far the row nudges right on hover */
+}
+
+/* ---------- Row ---------- */
+.bm-rows .bm-rows__row {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--bm-rows-gap);
+  width: 100%;
+  padding-block: var(--bm-rows-pad-y);
+  text-decoration: none;
+  color: inherit;
+  transition: color var(--bm-rows-duration) var(--bm-rows-ease),
+              translate var(--bm-rows-duration) var(--bm-rows-ease);
+}
+.bm-rows .bm-rows__row + .bm-rows__row { border-top: 1px solid var(--bm-rows-line); }
+.bm-rows .bm-rows__row:focus { outline: none; }
+.bm-rows .bm-rows__row:focus-visible { outline: 2px solid currentColor; outline-offset: -4px; }
+
+/* The fill sits behind the content and stretches past it on both sides */
+.bm-rows .bm-rows__row::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0 calc(var(--bm-rows-bleed) * -1);
+  border-radius: var(--bm-rows-radius);
+  background: var(--bm-rows-ink);
+}
+
+/* ---------- Content ---------- */
+.bm-rows .bm-rows__title { flex: 1 1 auto; min-width: 0; }
+.bm-rows .bm-rows__meta {
+  flex: 0 0 auto;
+  opacity: 0.6;
+  transition: opacity var(--bm-rows-duration) var(--bm-rows-ease);
+}
+
+/* Arrow chip. Empty = the CSS arrow below; put an Icon inside for your own. */
+.bm-rows .bm-rows__arrow {
+  position: relative;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: transparent;
+  transition: background-color var(--bm-rows-duration) var(--bm-rows-ease),
+              color var(--bm-rows-duration) var(--bm-rows-ease),
+              scale var(--bm-rows-duration) var(--bm-rows-ease);
+}
+.bm-rows .bm-rows__arrow:not(:has(*))::before,
+.bm-rows .bm-rows__arrow:not(:has(*))::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+}
+.bm-rows .bm-rows__arrow:not(:has(*))::before {
+  width: 15px;
+  height: 1.5px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+.bm-rows .bm-rows__arrow:not(:has(*))::after {
+  width: 8px;
+  height: 8px;
+  border-top: 1.5px solid currentColor;
+  border-right: 1.5px solid currentColor;
+  transform: translate(-50%, -50%) translateX(3.5px) rotate(45deg);
+}
+
+/* ---------- Active state: hover, or keyboard focus ---------- */
+.bm-rows .bm-rows__row:is(:hover, :focus-visible, :focus-within) {
+  color: var(--bm-rows-on-ink);
+  translate: var(--bm-rows-shift) 0;
+}
+.bm-rows .bm-rows__row:is(:hover, :focus-visible, :focus-within) .bm-rows__meta { opacity: 0.75; }
+.bm-rows .bm-rows__row:is(:hover, :focus-visible, :focus-within) .bm-rows__arrow {
+  background: var(--bm-rows-accent);
+  color: var(--bm-rows-ink);
+  scale: 1.06;
+}
+/* A divider would cut through the fill, so hide the ones touching an active row.
+   The "line" effect has no fill, so it keeps its dividers. */
+.bm-rows:not([data-bm-rows-effect="line"]) .bm-rows__row:is(:hover, :focus-visible, :focus-within),
+.bm-rows:not([data-bm-rows-effect="line"]) .bm-rows__row:is(:hover, :focus-visible, :focus-within) + .bm-rows__row {
+  border-top-color: transparent;
+}
+
+/* ---------- How the fill arrives ---------- */
+/* fill (default): wipes across from the left */
+.bm-rows .bm-rows__row::before {
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale var(--bm-rows-duration) var(--bm-rows-ease);
+}
+.bm-rows .bm-rows__row:is(:hover, :focus-visible, :focus-within)::before { scale: 1 1; }
+
+/* slide: rises from the bottom */
+.bm-rows[data-bm-rows-effect="slide"] .bm-rows__row::before {
+  transform-origin: center bottom;
+  scale: 1 0;
+}
+.bm-rows[data-bm-rows-effect="slide"] .bm-rows__row:is(:hover, :focus-visible, :focus-within)::before { scale: 1 1; }
+
+/* line: no fill — the row nudges across and a rule draws underneath */
+.bm-rows[data-bm-rows-effect="line"] .bm-rows__row::before { content: none; }
+.bm-rows[data-bm-rows-effect="line"] .bm-rows__row:is(:hover, :focus-visible, :focus-within) { color: inherit; }
+.bm-rows[data-bm-rows-effect="line"] .bm-rows__row::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--bm-rows-bleed) * -1);
+  right: calc(var(--bm-rows-bleed) * -1);
+  bottom: -1px;          /* sits over the divider instead of doubling it */
+  height: 2px;
+  background: currentColor;
+  transform-origin: left center;
+  scale: 0 1;
+  transition: scale var(--bm-rows-duration) var(--bm-rows-ease);
+}
+.bm-rows[data-bm-rows-effect="line"] .bm-rows__row:is(:hover, :focus-visible, :focus-within)::after { scale: 1 1; }
+
+/* ---------- Touch: no hover, so show the resting state ---------- */
+@media (hover: none) {
+  .bm-rows .bm-rows__row:hover {
+    color: inherit;
+    translate: none;
+  }
+  .bm-rows[data-bm-rows-effect="line"] .bm-rows__row:hover::after { scale: 0 1; }
+  .bm-rows .bm-rows__row:hover::before { scale: 0 1; }
+  .bm-rows[data-bm-rows-effect="slide"] .bm-rows__row:hover::before { scale: 1 0; }
+  /* The chip is always filled on touch: it reads as the thing you tap */
+  .bm-rows .bm-rows__arrow,
+  .bm-rows .bm-rows__row:hover .bm-rows__arrow {
+    background: var(--bm-rows-accent);
+    color: var(--bm-rows-ink);
+    scale: 1;
+  }
+  .bm-rows .bm-rows__row:hover .bm-rows__meta { opacity: 0.6; }
+  .bm-rows .bm-rows__row:hover,
+  .bm-rows .bm-rows__row:hover + .bm-rows__row { border-top-color: var(--bm-rows-line); }
+}
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 767px) {
+  .bm-rows { --bm-rows-bleed: 12px; --bm-rows-gap: 14px; }
+  .bm-rows .bm-rows__row { flex-wrap: wrap; }
+  .bm-rows .bm-rows__title { flex: 1 1 100%; order: 1; }
+  .bm-rows .bm-rows__meta { order: 2; }
+  .bm-rows .bm-rows__arrow { order: 3; margin-left: auto; width: 40px; height: 40px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-rows .bm-rows__row,
+  .bm-rows .bm-rows__row::before,
+  .bm-rows .bm-rows__row::after,
+  .bm-rows .bm-rows__arrow,
+  .bm-rows .bm-rows__meta { transition-duration: 1ms; }
+}
