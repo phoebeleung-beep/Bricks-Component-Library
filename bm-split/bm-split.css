@@ -1,0 +1,76 @@
+/* ==========================================================
+   BM · Split Panels  v2.0  (site-wide CSS)
+   Paste into Bricks > Settings > Custom code > Custom CSS,
+   below the other BM templates. No <style> tags needed.
+   ========================================================== */
+.bm-split {
+  --bm-split-duration: 620ms;
+  --bm-split-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --bm-split-gap: clamp(16px, 2vw, 32px);
+  --bm-split-grow: 1.45;        /* how much wider the open panel gets */
+  --bm-split-dim: 0.55;         /* how much the closed panels fade; 1 = no fading */
+  --bm-split-media-height: 320px;  /* only used by .bm-split__media (see below) */
+}
+
+/* ---------- Row ---------- */
+.bm-split .bm-split__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: flex-start;
+  gap: var(--bm-split-gap);
+  width: 100%;
+}
+
+/* ---------- Panel ---------- */
+.bm-split .bm-split__panel {
+  flex: 1 1 0;
+  width: auto;
+  min-width: 0;
+  cursor: pointer;
+}
+.bm-split .bm-split__panel:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+.bm-split.bm-is-ready .bm-split__panel { opacity: var(--bm-split-dim); }
+.bm-split.bm-is-ready .bm-split__panel.bm-is-active,
+.bm-split.bm-is-ready.bm-is-idle .bm-split__panel { opacity: 1; }
+
+.bm-split.bm-is-ready .bm-split__panel.bm-is-active { flex-grow: var(--bm-split-grow); }
+
+.bm-split.bm-is-animated .bm-split__panel {
+  transition:
+    flex-grow var(--bm-split-duration) var(--bm-split-ease),
+    opacity var(--bm-split-duration) var(--bm-split-ease);
+}
+
+/* ---------- Images ----------
+   A Bricks Image element is the <img> itself, so the rules have to apply both
+   to the image directly and to an image inside a wrapper. */
+.bm-split .bm-split__panel img,
+.bm-split .bm-split__panel video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Optional: add the class bm-split__media to an image to crop it to a fixed
+   height instead, so every panel lines up however tall the content is. */
+.bm-split .bm-split__panel img.bm-split__media,
+.bm-split .bm-split__panel .bm-split__media img {
+  height: var(--bm-split-media-height);
+  object-fit: cover;
+}
+.bm-split .bm-split__panel .bm-split__media { display: block; width: 100%; overflow: hidden; }
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 767px) {
+  /* Panels stack; tapping one still brings it forward */
+  .bm-split .bm-split__row { flex-direction: column; }
+  .bm-split .bm-split__panel { width: 100%; flex: 0 0 auto; }
+  .bm-split.bm-is-ready .bm-split__panel.bm-is-active { flex-grow: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bm-split.bm-is-animated .bm-split__panel { transition-duration: 1ms; }
+}
